@@ -2,207 +2,264 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Vibe Check</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The [Her Name] App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
-            /* Soft, dreamy gradient background */
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden; /* STOP SCROLLING */
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Glassmorphism Effect */
+        /* Glassmorphism */
         .glass {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
         }
 
-        /* Bubble Animation */
-        .bubble {
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-        }
-        .bubble:active {
-            transform: scale(0.9);
-        }
-        .popped {
-            transform: scale(0);
-            opacity: 0;
-        }
+        /* Animations */
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        .float { animation: float 4s ease-in-out infinite; }
+        
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .btn-pop:active { animation: pop 0.2s ease-in-out; }
 
-        /* Floating Animation for Cards */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
-        .float-card {
-            animation: float 4s ease-in-out infinite;
-        }
+        /* Bubble Game Styles */
+        .bubble { transition: all 0.3s ease; cursor: pointer; }
+        .bubble.popped { transform: scale(0); opacity: 0; }
+
+        /* Tab Transitions */
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; height: 100%; }
+        .tab-content.active { display: flex; opacity: 1; }
     </style>
 </head>
-<body class="flex flex-col items-center py-10 px-4 text-slate-800">
+<body class="text-slate-800">
 
-    <div class="glass w-full max-w-md rounded-3xl p-8 text-center mb-8 transform transition hover:scale-[1.01] duration-500">
-        <div class="inline-block bg-white/40 rounded-full px-3 py-1 text-xs font-bold tracking-widest uppercase mb-4 text-slate-600">
-            For My Fav Internet Friend
-        </div>
-        <h1 class="text-4xl font-bold mb-2 text-slate-800 tracking-tight">The [HER NAME] Hub</h1>
-        <p class="text-slate-600 font-medium">Official HQ for Main Character Energy</p>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4 w-full max-w-md mb-8">
-        <div class="glass rounded-2xl p-5 float-card" style="animation-delay: 0s;">
-            <div class="text-2xl mb-1">👑</div>
-            <h3 class="text-sm font-bold opacity-70 uppercase">Status</h3>
-            <p class="font-bold text-lg leading-tight">Single & Legendary</p>
-        </div>
-        <div class="glass rounded-2xl p-5 float-card" style="animation-delay: 1s;">
-            <div class="text-2xl mb-1">🍿</div>
-            <h3 class="text-sm font-bold opacity-70 uppercase">K-Drama Lvl</h3>
-            <p class="font-bold text-lg leading-tight">Expert Analyst</p>
-        </div>
-    </div>
-
-    <div class="glass w-full max-w-md rounded-3xl p-6 mb-8 text-center">
-        <div class="flex justify-between items-center mb-4 px-2">
-            <h2 class="text-xl font-bold">Anti-Stress Zone</h2>
-            <span id="score" class="bg-white/50 px-3 py-1 rounded-full text-sm font-bold">Popped: 0</span>
-        </div>
+    <main class="flex-1 relative p-6 flex flex-col items-center justify-center">
         
-        <div class="grid grid-cols-5 gap-3 mb-4" id="bubble-grid">
+        <div id="tab-home" class="tab-content active flex-col items-center justify-center w-full max-w-md">
+            <div class="glass w-full rounded-3xl p-8 text-center mb-6 float">
+                <div class="inline-block bg-white/50 rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase mb-3 text-slate-500">
+                    V.I.P ACCESS ONLY
+                </div>
+                <h1 class="text-4xl font-bold mb-1 text-slate-800">[HER NAME]</h1>
+                <p class="text-slate-600 text-sm font-medium">Main Character Energy: 100%</p>
             </div>
 
-        <button onclick="resetBubbles()" class="text-xs font-bold text-slate-500 hover:text-slate-800 underline">
-            Refill Bubble Wrap
+            <div class="grid grid-cols-2 gap-4 w-full mb-6">
+                <div class="glass rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-1">👑</div>
+                    <div class="text-xs font-bold opacity-60 uppercase">Status</div>
+                    <div class="font-bold text-sm">Single & Picky</div>
+                </div>
+                <div class="glass rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-1">🎬</div>
+                    <div class="text-xs font-bold opacity-60 uppercase">K-Drama</div>
+                    <div class="font-bold text-sm">PhD Level</div>
+                </div>
+            </div>
+
+            <button onclick="triggerOverjoyed()" class="glass w-full py-4 rounded-2xl font-bold text-slate-700 hover:bg-white/40 transition btn-pop flex items-center justify-center gap-2">
+                <span>✨</span> Tap for Instant Hype <span>✨</span>
+            </button>
+        </div>
+
+        <div id="tab-game" class="tab-content flex-col items-center justify-center w-full max-w-md">
+            <div class="glass w-full rounded-3xl p-6 text-center relative">
+                <h2 class="text-xl font-bold mb-2">Anti-Stress Zone</h2>
+                <p class="text-xs text-slate-500 mb-4">Pop them all for a surprise reward...</p>
+                
+                <div class="grid grid-cols-5 gap-3 mb-4" id="bubble-grid">
+                    </div>
+
+                <div id="game-status" class="text-xs font-bold text-slate-400">Popped: 0/20</div>
+            </div>
+
+            <div id="reward-card" class="hidden absolute inset-0 z-20 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
+                <div class="bg-white rounded-3xl p-8 text-center shadow-2xl transform scale-90 animate-[pop_0.5s_ease-out_forwards]">
+                    <div class="text-5xl mb-4">🏆</div>
+                    <h3 class="text-2xl font-bold text-amber-500 mb-2">Golden Ticket!</h3>
+                    <p class="text-slate-600 mb-6 text-sm">You cleared the stress! This ticket is valid for one <strong>"I told you so"</strong> regarding any K-Drama plot twist.</p>
+                    <button onclick="resetGame()" class="bg-slate-800 text-white px-6 py-2 rounded-full font-bold text-sm">Play Again</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-vibe" class="tab-content flex-col items-center justify-center w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">What's the vibe?</h2>
+            
+            <div class="space-y-3 w-full">
+                <button onclick="showMood('motivation')" class="glass w-full py-4 px-6 rounded-2xl font-bold text-left flex justify-between items-center group transition hover:bg-white/50">
+                    <span class="flex items-center gap-3">🚀 <span class="text-sm">Need Motivation</span></span>
+                    <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+                </button>
+                
+                <button onclick="showMood('bored')" class="glass w-full py-4 px-6 rounded-2xl font-bold text-left flex justify-between items-center group transition hover:bg-white/50">
+                    <span class="flex items-center gap-3">😑 <span class="text-sm">Bored & Single</span></span>
+                    <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+                </button>
+                
+                <button onclick="showMood('miss')" class="glass w-full py-4 px-6 rounded-2xl font-bold text-left flex justify-between items-center group transition hover:bg-white/50">
+                    <span class="flex items-center gap-3">🥺 <span class="text-sm">Miss Our Talks</span></span>
+                    <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+                </button>
+            </div>
+            
+            <div id="mood-msg" class="mt-8 text-center text-lg font-medium text-slate-700 min-h-[60px] animate-pulse">
+                Select a mood above...
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="h-20 glass w-full rounded-t-3xl flex justify-around items-center px-6 pb-2 z-50">
+        <button onclick="switchTab('home')" class="nav-btn text-slate-400 hover:text-slate-800 flex flex-col items-center gap-1 active-nav text-slate-800">
+            <span class="text-2xl">🏠</span>
+            <span class="text-[10px] font-bold">Home</span>
         </button>
-    </div>
-
-    <div class="glass w-full max-w-md rounded-3xl p-6 mb-12">
-        <h2 class="text-xl font-bold text-center mb-6">What's the vibe right now?</h2>
-        
-        <div class="space-y-3">
-            <button onclick="dispense('motivation')" class="w-full bg-white/40 hover:bg-white/70 py-4 rounded-xl font-bold transition duration-300 flex items-center justify-center gap-2 group">
-                <span>🚀</span> Needs Motivation
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </button>
-            
-            <button onclick="dispense('bored')" class="w-full bg-white/40 hover:bg-white/70 py-4 rounded-xl font-bold transition duration-300 flex items-center justify-center gap-2 group">
-                <span>😑</span> Bored & Single
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </button>
-            
-            <button onclick="dispense('miss')" class="w-full bg-white/40 hover:bg-white/70 py-4 rounded-xl font-bold transition duration-300 flex items-center justify-center gap-2 group">
-                <span>🥺</span> Miss Our Talks
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-            </button>
-        </div>
-
-        <div id="message-box" class="hidden mt-6 bg-white/60 rounded-xl p-4 text-center animate-bounce-short">
-            <p id="message-text" class="text-lg font-medium text-slate-800"></p>
-        </div>
-    </div>
-
-    <div class="text-center opacity-60 text-xs pb-10 font-medium">
-        <p>Coded by [Your Name]</p>
-        <p class="mt-1">Distance is just a glitch in the algorithm.</p>
-    </div>
+        <button onclick="switchTab('game')" class="nav-btn text-slate-400 hover:text-slate-800 flex flex-col items-center gap-1">
+            <span class="text-2xl">🎮</span>
+            <span class="text-[10px] font-bold">Game</span>
+        </button>
+        <button onclick="switchTab('vibe')" class="nav-btn text-slate-400 hover:text-slate-800 flex flex-col items-center gap-1">
+            <span class="text-2xl">✨</span>
+            <span class="text-[10px] font-bold">Vibe</span>
+        </button>
+    </nav>
 
     <script>
-        // --- BUBBLE WRAP LOGIC ---
+        // --- TAB SWITCHING LOGIC ---
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+                // Small delay to allow display:none to work
+                setTimeout(() => el.style.display = 'none', 300); 
+            });
+            
+            // Show selected tab
+            const selected = document.getElementById('tab-' + tabId);
+            selected.style.display = 'flex';
+            setTimeout(() => selected.classList.add('active'), 10);
+
+            // Update Nav Icons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('text-slate-800'));
+            // (Simple hack: highlighting clicked button would require ID logic, keeping it simple here)
+        }
+
+        // --- GAME LOGIC ---
         const bubbleGrid = document.getElementById('bubble-grid');
-        const scoreDisplay = document.getElementById('score');
-        let poppedCount = 0;
+        const gameStatus = document.getElementById('game-status');
+        const rewardCard = document.getElementById('reward-card');
+        let popped = 0;
         const totalBubbles = 20;
 
-        function createBubbles() {
-            bubbleGrid.innerHTML = ''; // Clear grid
-            for (let i = 0; i < totalBubbles; i++) {
-                const bubble = document.createElement('div');
-                // Creating a nice gradient circle
-                bubble.className = 'bubble bg-gradient-to-br from-purple-300 to-blue-300 rounded-full aspect-square shadow-inner opacity-80 hover:opacity-100';
-                bubble.onclick = function() {
-                    if (!this.classList.contains('popped')) {
-                        this.classList.add('popped');
-                        poppedCount++;
-                        scoreDisplay.innerText = `Popped: ${poppedCount}`;
-                        if(poppedCount === totalBubbles) {
-                            setTimeout(() => alert("So satisfying, right? Click refill to go again!"), 500);
-                        }
-                    }
-                };
-                bubbleGrid.appendChild(bubble);
+        function initGame() {
+            bubbleGrid.innerHTML = '';
+            popped = 0;
+            rewardCard.classList.add('hidden');
+            gameStatus.innerText = `Popped: 0/${totalBubbles}`;
+            
+            for(let i=0; i<totalBubbles; i++) {
+                let b = document.createElement('div');
+                b.className = 'bubble w-10 h-10 bg-white/60 rounded-full shadow-sm hover:bg-white/80';
+                b.onclick = () => popBubble(b);
+                bubbleGrid.appendChild(b);
             }
         }
 
-        function resetBubbles() {
-            poppedCount = 0;
-            scoreDisplay.innerText = `Popped: 0`;
-            createBubbles();
+        function popBubble(element) {
+            if(element.classList.contains('popped')) return;
+            
+            element.classList.add('popped');
+            // Play sound (optional - browsers block autoplay sometimes)
+            // new Audio('pop.mp3').play().catch(e => {}); 
+            
+            popped++;
+            gameStatus.innerText = `Popped: ${popped}/${totalBubbles}`;
+
+            if(popped === totalBubbles) {
+                triggerWin();
+            }
         }
 
-        // Initialize bubbles on load
-        createBubbles();
+        function triggerWin() {
+            // 1. Confetti Explosion
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            // 2. Show Reward
+            setTimeout(() => {
+                rewardCard.classList.remove('hidden');
+            }, 500);
+        }
 
+        function resetGame() {
+            initGame();
+        }
 
-        // --- MOOD DISPENSER LOGIC ---
-        const messageBox = document.getElementById('message-box');
-        const messageText = document.getElementById('message-text');
-
-        const messages = {
-            motivation: [
-                "You are the main character. The writers are just building your character arc right now.",
-                "Remember: You don't chase, you attract.",
-                "Adjust your crown. You've got this.",
-                "Today's goal: Drink water and be iconic."
-            ],
-            bored: [
-                "Go watch that K-Drama episode you've been putting off.",
-                "Plot twist: The love of your life is probably stuck in traffic somewhere.",
-                "Time to order some food. Snacks solve 90% of problems.",
-                "Why have a boyfriend when you can have peace and quiet?"
-            ],
-            miss: [
-                "Check your WhatsApp, I'm probably waiting for a text.",
-                "Distance sucks, but our friendship is elite.",
-                "Sending a virtual hug... Loading... 100% Complete.",
-                "I'd teleport there if the technology existed."
-            ]
+        // --- MOOD LOGIC ---
+        const moodMsg = document.getElementById('mood-msg');
+        const quotes = {
+            motivation: ["You don't chase, you attract.", "Main Character energy only today.", "Your future self is so proud of you."],
+            bored: ["Go annoy your best friend (me).", "Time for a snack break.", "Watch a blooper reel."],
+            miss: ["I'm just a text away.", "Distance is temporary, drip is forever.", "Sending telepathic high-fives."]
         };
 
-        function dispense(mood) {
-            // Get random message from category
-            const category = messages[mood];
-            const randomMsg = category[Math.floor(Math.random() * category.length)];
-            
-            // Show animation
-            messageBox.classList.remove('hidden');
-            messageText.innerText = randomMsg;
-            
-            // Re-trigger animation
-            messageBox.classList.remove('animate-bounce-short');
-            void messageBox.offsetWidth; // trigger reflow
-            messageBox.classList.add('animate-bounce-short');
+        function showMood(type) {
+            const list = quotes[type];
+            const random = list[Math.floor(Math.random() * list.length)];
+            moodMsg.style.opacity = 0;
+            setTimeout(() => {
+                moodMsg.innerText = random;
+                moodMsg.style.opacity = 1;
+            }, 200);
         }
-    </script>
 
-    <style>
-        /* Custom Keyframe for the message box pop */
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+        // --- OVERJOYED FEATURE (THE HYPE BUTTON) ---
+        function triggerOverjoyed() {
+            // Massive confetti
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 }
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 }
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            // Alert for now (Keep it simple)
+            alert("✨ Just a reminder: You make my life way more fun. Happy V-Day! ✨");
         }
-        .animate-bounce-short {
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-    </style>
+
+        // Start
+        initGame();
+        switchTab('home'); // Default tab
+
+    </script>
 </body>
 </html>
