@@ -14,119 +14,96 @@
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             min-height: 100vh;
             color: #1e293b;
+            overflow-x: hidden;
         }
 
         /* Glass Effect */
         .glass {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
         }
 
-        /* Page Transitions */
-        .page-section {
-            display: none; /* Hidden by default */
-            animation: fadeIn 0.4s ease-in-out;
-        }
-        .page-section.active {
-            display: flex; /* Flex to center content */
-        }
+        /* Transitions */
+        .page-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .page-section.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Bubble Game */
+        /* Game Elements */
         .bubble { transition: all 0.2s; cursor: pointer; }
         .bubble:active { transform: scale(0.9); }
         .bubble.popped { transform: scale(0); opacity: 0; }
 
-        /* Card Hover */
-        .hover-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.6); }
+        /* Cursor blinking for typewriter */
+        .cursor::after { content: '|'; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <div id="home-page" class="page-section active flex-col w-full max-w-md gap-6">
-        
-        <div class="glass rounded-3xl p-8 text-center shadow-lg">
+        <div class="glass rounded-3xl p-8 text-center shadow-lg transform hover:scale-[1.02] transition duration-500">
             <div class="inline-block bg-white/60 rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase mb-3 text-slate-500">
-                Authorized Personnel Only
+                Official App
             </div>
             <h1 class="text-4xl font-bold mb-1">[HER NAME]</h1>
-            <p class="text-slate-600 font-medium">Head of Main Character Dept.</p>
+            <p class="text-slate-600 font-medium">Chief Main Character Officer</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
             <div class="glass rounded-2xl p-5 text-center">
                 <div class="text-2xl mb-1">👑</div>
                 <div class="text-xs font-bold opacity-60 uppercase">Status</div>
-                <div class="font-bold">Single & Epic</div>
+                <div class="font-bold">Legendary</div>
             </div>
             <div class="glass rounded-2xl p-5 text-center">
-                <div class="text-2xl mb-1">📺</div>
-                <div class="text-xs font-bold opacity-60 uppercase">K-Drama</div>
-                <div class="font-bold">Pro Streamer</div>
+                <div class="text-2xl mb-1">🎬</div>
+                <div class="text-xs font-bold opacity-60 uppercase">Drama</div>
+                <div class="font-bold">Expert</div>
             </div>
         </div>
 
         <div class="space-y-3">
-            <button onclick="goTo('game')" class="glass hover-card w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all">
-                🎮 Anti-Stress Game
+            <button onclick="goTo('game')" class="glass w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/60 transition">
+                🎮 Stress Popper
             </button>
-            <button onclick="goTo('vibe')" class="glass hover-card w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all">
-                ✨ The Vibe Check
+            <button onclick="goTo('vibe')" class="glass w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/60 transition">
+                ✨ Vibe Check
             </button>
         </div>
-        
-        <div class="text-center text-xs opacity-50 mt-4">v2.0 | Made for you</div>
     </div>
 
 
-    <div id="game-page" class="page-section flex-col w-full max-w-md items-center">
-        <button onclick="goTo('home')" class="self-start mb-4 text-sm font-bold opacity-60 hover:opacity-100">
-            ⬅ Back Home
-        </button>
+    <div id="game-page" class="page-section flex-col w-full max-w-md items-center relative">
+        <button onclick="goTo('home')" class="self-start mb-4 text-sm font-bold opacity-60 hover:opacity-100">⬅ Back Home</button>
 
-        <div class="glass w-full rounded-3xl p-6 text-center relative">
+        <div class="glass w-full rounded-3xl p-6 text-center relative z-10">
             <h2 class="text-2xl font-bold mb-2">Pop The Stress</h2>
-            <p class="text-sm text-slate-600 mb-6">Clear the board for a surprise...</p>
+            <p class="text-sm text-slate-600 mb-6">Clear the board for a BIG surprise...</p>
             
-            <div class="grid grid-cols-5 gap-3 mb-6 mx-auto" id="bubble-grid">
-                </div>
-
+            <div class="grid grid-cols-5 gap-3 mb-6 mx-auto" id="bubble-grid"></div>
             <div id="game-status" class="font-bold text-slate-400">Popped: 0</div>
-            
-            <div id="reward-card" class="hidden mt-6 bg-white/80 rounded-xl p-4 animate-bounce">
-                <div class="text-4xl mb-2">🏆</div>
-                <h3 class="font-bold text-amber-600">Golden Ticket!</h3>
-                <p class="text-xs text-slate-600">Valid for 1 free rant session about any drama.</p>
-                <button onclick="resetGame()" class="mt-3 text-xs underline opacity-50">Play Again</button>
-            </div>
+        </div>
+
+        <div id="finale-overlay" class="fixed inset-0 bg-slate-900 z-50 hidden flex-col items-center justify-center text-white p-8 text-center">
+            <h2 class="text-3xl font-bold mb-6 text-yellow-300 animate-pulse">✨ SURPRISE! ✨</h2>
+            <div id="typewriter-text" class="text-xl font-medium leading-relaxed max-w-md cursor min-h-[100px]"></div>
+            <button onclick="closeFinale()" class="mt-10 px-6 py-2 border border-white/30 rounded-full text-sm hover:bg-white/20 transition">Close Surprise</button>
         </div>
     </div>
 
 
     <div id="vibe-page" class="page-section flex-col w-full max-w-md items-center">
-        <button onclick="goTo('home')" class="self-start mb-4 text-sm font-bold opacity-60 hover:opacity-100">
-            ⬅ Back Home
-        </button>
+        <button onclick="goTo('home')" class="self-start mb-4 text-sm font-bold opacity-60 hover:opacity-100">⬅ Back Home</button>
 
         <div class="glass w-full rounded-3xl p-6 text-center">
-            <h2 class="text-2xl font-bold mb-6">How are we feeling?</h2>
+            <h2 class="text-2xl font-bold mb-6">Current Mood?</h2>
             
             <div class="space-y-3 w-full">
-                <button onclick="showMood('motivation')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">
-                    🚀 Need Motivation
-                </button>
-                <button onclick="showMood('bored')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">
-                    😑 Bored & Single
-                </button>
-                <button onclick="showMood('miss')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">
-                    🥺 Miss Our Talks
-                </button>
+                <button onclick="showMood('motivation')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">🚀 I Need Hype</button>
+                <button onclick="showMood('bored')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">😑 Bored & Single</button>
+                <button onclick="showMood('miss')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">🥺 Miss Our Talks</button>
             </div>
 
             <div id="mood-display" class="hidden mt-8 p-6 bg-white/60 rounded-2xl shadow-sm transition-all duration-300 transform scale-95 opacity-0">
@@ -135,70 +112,106 @@
         </div>
     </div>
 
-
     <script>
         // --- NAVIGATION ---
         function goTo(pageId) {
-            // Hide all pages
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            // Show target page
             document.getElementById(pageId + '-page').classList.add('active');
-            
             if(pageId === 'game') initGame();
         }
 
         // --- GAME LOGIC ---
         const bubbleGrid = document.getElementById('bubble-grid');
         const gameStatus = document.getElementById('game-status');
-        const rewardCard = document.getElementById('reward-card');
+        const finaleOverlay = document.getElementById('finale-overlay');
         let poppedCount = 0;
         const totalBubbles = 20;
+        let finaleInterval;
 
         function initGame() {
             bubbleGrid.innerHTML = '';
             poppedCount = 0;
             gameStatus.innerText = "Popped: 0";
-            rewardCard.classList.add('hidden');
+            finaleOverlay.classList.add('hidden');
             
             for(let i=0; i<totalBubbles; i++) {
                 let b = document.createElement('div');
-                b.className = 'bubble bg-gradient-to-br from-blue-200 to-purple-200 w-10 h-10 rounded-full shadow-inner mx-auto';
+                b.className = 'bubble bg-gradient-to-br from-indigo-300 to-purple-300 w-10 h-10 rounded-full shadow-inner mx-auto';
                 b.onclick = () => {
                     if(!b.classList.contains('popped')) {
                         b.classList.add('popped');
                         poppedCount++;
                         gameStatus.innerText = `Popped: ${poppedCount}`;
-                        if(poppedCount === totalBubbles) winGame();
+                        if(poppedCount === totalBubbles) triggerFinale();
                     }
                 };
                 bubbleGrid.appendChild(b);
             }
         }
 
-        function winGame() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            setTimeout(() => rewardCard.classList.remove('hidden'), 300);
+        function triggerFinale() {
+            finaleOverlay.classList.remove('hidden');
+            finaleOverlay.classList.add('flex'); // Make sure it uses flexbox
+            
+            // 1. Continuous Fireworks
+            var duration = 15 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end && !finaleOverlay.classList.contains('hidden')) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            // 2. Typewriter Effect
+            const message = "Even though we are miles apart, you are one of the closest friends I have. \n\nKeep smiling, keep watching dramas, and keep being awesome. \n\nHappy Valentine's Day! 🌸";
+            const typeWriterElement = document.getElementById('typewriter-text');
+            typeWriterElement.innerText = "";
+            let i = 0;
+            
+            function typeWriter() {
+                if (i < message.length) {
+                    typeWriterElement.innerText += message.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 50); // Typing speed
+                }
+            }
+            setTimeout(typeWriter, 500);
         }
 
-        function resetGame() {
-            initGame();
+        function closeFinale() {
+            finaleOverlay.classList.add('hidden');
+            finaleOverlay.classList.remove('flex');
+            goTo('home');
         }
 
-        // --- VIBE LOGIC (NO REPEATS) ---
-        // Stores the index of the last used quote to avoid repetition
+        // --- VIBE CONTENT (20+ Items each) ---
         let lastIndices = { motivation: -1, bored: -1, miss: -1 };
 
         const messages = {
             motivation: [
-                "You are the main character. The writers are just adding plot development right now.",
+                "You are the main character. The writers are just building character development right now.",
+                "Adjust your crown. You've got this.",
                 "Don't lower your standards. Increase your hydration.",
-                "You are capable, you are worthy, and your outfit is probably cute today.",
-                "Channel your inner CEO. Handle it.",
+                "You are capable, worthy, and your outfit is probably cute today.",
+                "Channel your inner K-Drama CEO. Handle it.",
                 "Remember: You don't chase, you attract.",
                 "If it costs you your peace, it's too expensive.",
                 "Spoiler alert: You win in the end.",
-                "Adjust your crown and keep moving.",
-                "Today is a good day to be iconic."
+                "Today is a good day to be iconic.",
+                "Your vibe attracts your tribe. (And your tribe is cool).",
+                "Don't let the muggles get you down.",
+                "Keep your heels, head, and standards high.",
+                "You’re doing better than you think you are.",
+                "Confidence level: Selfie with no filter.",
+                "The world is lucky to have you in it.",
+                "Focus on the step in front of you, not the whole staircase.",
+                "Be a voice, not an echo.",
+                "Shine bright like a diamond (or a really polished spoon).",
+                "You are limited edition.",
+                "Believe in your inner power."
             ],
             bored: [
                 "Go watch that K-Drama episode you've been pausing.",
@@ -208,7 +221,19 @@
                 "Being single means you don't have to share your food. Win.",
                 "Go online shopping. Put things in the cart. Close the tab. Therapy.",
                 "If you're bored, you're just a Side Character. Go do something Main Character-y.",
-                "Recommended activity: Nap."
+                "Recommended activity: Nap.",
+                "Scroll through TikTok until you laugh.",
+                "Go annoy your siblings (or me).",
+                "Order the food. You deserve it.",
+                "Start a new drama. Yes, another one.",
+                "Listen to that one song on repeat until you hate it.",
+                "Stare at the ceiling and contemplate the universe.",
+                "Organize your gallery. Delete the 50 accidental screenshots.",
+                "Make a fake scenario in your head. Direct the movie.",
+                "Go drink water. You're probably dehydrated.",
+                "Check your horoscope. Blame the stars.",
+                "Learn a K-pop dance. Give up after 2 minutes.",
+                "Remember: Single = Richer."
             ],
             miss: [
                 "I'm probably waiting for your text right now.",
@@ -218,7 +243,19 @@
                 "Our friendship > Any relationship.",
                 "Just a reminder that you're my favorite notification.",
                 "I wish we could grab coffee right now.",
-                "Technically we look at the same moon, so that's cool I guess."
+                "Technically we look at the same moon, so that's cool I guess.",
+                "Can't wait until we can actually hang out IRL.",
+                "You are the best internet find ever.",
+                "Missing my K-Drama buddy.",
+                "If I could email you a coffee, I would.",
+                "Reply faster, I'm bored without you.",
+                "Distance allows us to appreciate the texts more.",
+                "Sending good vibes across the miles.",
+                "You're far away, but you're close to my heart. (Cheesy but true).",
+                "We need a teleparty soon.",
+                "Life is boring without our chats.",
+                "Thinking of you! Hope you're smiling.",
+                "Internet friends are the best friends."
             ]
         };
 
@@ -227,15 +264,12 @@
             const text = document.getElementById('mood-text');
             const list = messages[type];
             
-            // Logic to prevent same quote twice
             let newIndex;
-            do {
-                newIndex = Math.floor(Math.random() * list.length);
-            } while (newIndex === lastIndices[type] && list.length > 1);
+            do { newIndex = Math.floor(Math.random() * list.length); } 
+            while (newIndex === lastIndices[type] && list.length > 1);
             
-            lastIndices[type] = newIndex; // Save for next time
+            lastIndices[type] = newIndex;
             
-            // Animation reset
             display.classList.remove('hidden');
             display.style.opacity = '0';
             display.style.transform = 'scale(0.95)';
