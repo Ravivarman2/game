@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Sarita Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -15,11 +15,12 @@
             min-height: 100vh;
             color: #1e293b;
             overflow-x: hidden;
+            touch-action: manipulation; /* Improves touch response */
         }
 
         /* Glass Effect */
         .glass {
-            background: rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
@@ -30,14 +31,25 @@
         .page-section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Game Elements */
+        /* Game Specific Styles */
         .bubble { transition: all 0.2s; cursor: pointer; }
         .bubble:active { transform: scale(0.9); }
         .bubble.popped { transform: scale(0); opacity: 0; }
 
-        /* Cursor blinking for typewriter */
-        .cursor::after { content: '|'; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .mole-hole { background: rgba(0,0,0,0.1); border-radius: 50%; position: relative; overflow: hidden; }
+        .mole { transition: transform 0.1s; transform: translateY(100%); }
+        .mole.up { transform: translateY(0%); }
+
+        .grid-2048 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .tile-2048 { background: rgba(255,255,255,0.6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; aspect-ratio: 1; }
+        
+        /* Catcher Game */
+        #catcher-area { position: relative; overflow: hidden; }
+        .falling-item { position: absolute; font-size: 24px; }
+        #player-basket { position: absolute; bottom: 10px; font-size: 40px; transition: left 0.1s; }
+
+        /* Wheel */
+        #wheel-canvas { transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
@@ -65,47 +77,138 @@
         </div>
 
         <div class="space-y-3">
-            <button onclick="goTo('game')" class="glass w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/60 transition">
-                🎮 Stress Popper
+            <button onclick="goTo('game-menu')" class="glass w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/60 transition shadow-sm border-b-4 border-white/40 active:border-b-0 active:translate-y-1">
+                🎮 Game Center (5 Games)
             </button>
-            <button onclick="goTo('vibe')" class="glass w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/60 transition">
+            <button onclick="goTo('vibe')" class="glass w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-white/60 transition shadow-sm border-b-4 border-white/40 active:border-b-0 active:translate-y-1">
                 ✨ Vibe Check
             </button>
         </div>
     </div>
 
+    <div id="game-menu-page" class="page-section flex-col w-full max-w-md gap-4">
+        <button onclick="goTo('home')" class="self-start text-sm font-bold opacity-60 hover:opacity-100 mb-2">⬅ Back Home</button>
+        <h2 class="text-2xl font-bold text-center mb-2">Arcade Zone</h2>
+        
+        <button onclick="goTo('popper')" class="glass p-4 rounded-xl flex items-center gap-4 hover:bg-white/60 transition">
+            <span class="text-3xl">🫧</span>
+            <div class="text-left"><div class="font-bold">Stress Popper</div><div class="text-xs opacity-60">Classic Bubble Wrap</div></div>
+        </button>
 
-    <div id="game-page" class="page-section flex-col w-full max-w-md items-center relative">
-        <button onclick="goTo('home')" class="self-start mb-4 text-sm font-bold opacity-60 hover:opacity-100">⬅ Back Home</button>
+        <button onclick="goTo('catcher')" class="glass p-4 rounded-xl flex items-center gap-4 hover:bg-white/60 transition">
+            <span class="text-3xl">🧺</span>
+            <div class="text-left"><div class="font-bold">Green Flag Catcher</div><div class="text-xs opacity-60">Collect Love, Avoid Red Flags</div></div>
+        </button>
 
-        <div class="glass w-full rounded-3xl p-6 text-center relative z-10">
-            <h2 class="text-2xl font-bold mb-2">Pop The Stress</h2>
-            <p class="text-sm text-slate-600 mb-6">Clear the board for a BIG surprise...</p>
-            
-            <div class="grid grid-cols-5 gap-3 mb-6 mx-auto" id="bubble-grid"></div>
+        <button onclick="goTo('whack')" class="glass p-4 rounded-xl flex items-center gap-4 hover:bg-white/60 transition">
+            <span class="text-3xl">🔨</span>
+            <div class="text-left"><div class="font-bold">Whack-a-Toxic-Text</div><div class="text-xs opacity-60">Smash the bad vibes</div></div>
+        </button>
+
+        <button onclick="goTo('2048')" class="glass p-4 rounded-xl flex items-center gap-4 hover:bg-white/60 transition">
+            <span class="text-3xl">🧩</span>
+            <div class="text-left"><div class="font-bold">Main Character 2048</div><div class="text-xs opacity-60">Merge to become Queen</div></div>
+        </button>
+
+        <button onclick="goTo('wheel')" class="glass p-4 rounded-xl flex items-center gap-4 hover:bg-white/60 transition">
+            <span class="text-3xl">🎡</span>
+            <div class="text-left"><div class="font-bold">Decision Wheel</div><div class="text-xs opacity-60">Can't decide? Spin this.</div></div>
+        </button>
+    </div>
+
+    <div id="popper-page" class="page-section flex-col w-full max-w-md items-center">
+        <button onclick="goTo('game-menu')" class="self-start mb-4 text-sm font-bold opacity-60">⬅ Games</button>
+        <div class="glass w-full rounded-3xl p-6 text-center">
+            <h2 class="text-xl font-bold mb-2">Pop The Stress</h2>
+            <div class="grid grid-cols-5 gap-3 mb-6 mx-auto mt-4" id="bubble-grid"></div>
             <div id="game-status" class="font-bold text-slate-400">Popped: 0</div>
-        </div>
-
-        <div id="finale-overlay" class="fixed inset-0 bg-slate-900 z-50 hidden flex-col items-center justify-center text-white p-8 text-center">
-            <h2 class="text-3xl font-bold mb-6 text-yellow-300 animate-pulse">✨ SURPRISE! ✨</h2>
-            <div id="typewriter-text" class="text-xl font-medium leading-relaxed max-w-md cursor min-h-[100px]"></div>
-            <button onclick="closeFinale()" class="mt-10 px-6 py-2 border border-white/30 rounded-full text-sm hover:bg-white/20 transition">Close Surprise</button>
         </div>
     </div>
 
+    <div id="catcher-page" class="page-section flex-col w-full max-w-md items-center">
+        <button onclick="stopCatcher(); goTo('game-menu')" class="self-start mb-4 text-sm font-bold opacity-60">⬅ Games</button>
+        <div class="glass w-full rounded-3xl p-4 text-center overflow-hidden">
+            <div class="flex justify-between mb-2 font-bold">
+                <span>Score: <span id="catcher-score">0</span></span>
+                <span>❤️</span>
+            </div>
+            <div id="catcher-area" class="w-full h-80 bg-white/30 rounded-xl relative border-b-4 border-slate-300">
+                <div id="player-basket">🧺</div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button ontouchstart="moveBasket(-20)" onmousedown="moveBasket(-20)" class="flex-1 bg-white/50 p-4 rounded-xl text-2xl font-bold hover:bg-white/80">⬅️</button>
+                <button ontouchstart="moveBasket(20)" onmousedown="moveBasket(20)" class="flex-1 bg-white/50 p-4 rounded-xl text-2xl font-bold hover:bg-white/80">➡️</button>
+            </div>
+            <p class="text-xs mt-2 opacity-60">Catch Flowers/Hearts. Avoid Flags!</p>
+        </div>
+    </div>
+
+    <div id="whack-page" class="page-section flex-col w-full max-w-md items-center">
+        <button onclick="stopWhack(); goTo('game-menu')" class="self-start mb-4 text-sm font-bold opacity-60">⬅ Games</button>
+        <div class="glass w-full rounded-3xl p-6 text-center">
+            <div class="flex justify-between mb-4 font-bold">
+                <span>Score: <span id="whack-score">0</span></span>
+                <span id="whack-timer">30s</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="mole-hole h-20" onclick="hitMole(0)"><div id="mole-0" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(1)"><div id="mole-1" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(2)"><div id="mole-2" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(3)"><div id="mole-3" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(4)"><div id="mole-4" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(5)"><div id="mole-5" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(6)"><div id="mole-6" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(7)"><div id="mole-7" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+                <div class="mole-hole h-20" onclick="hitMole(8)"><div id="mole-8" class="mole w-full h-full flex items-center justify-center text-3xl">🚩</div></div>
+            </div>
+            <button onclick="startWhack()" id="whack-btn" class="bg-indigo-500 text-white px-6 py-2 rounded-full font-bold">Start Game</button>
+        </div>
+    </div>
+
+    <div id="2048-page" class="page-section flex-col w-full max-w-md items-center">
+        <button onclick="goTo('game-menu')" class="self-start mb-4 text-sm font-bold opacity-60">⬅ Games</button>
+        <div class="glass w-full rounded-3xl p-6 text-center">
+            <h2 class="text-xl font-bold mb-4">Merge to get the 👑</h2>
+            <div class="bg-white/30 p-2 rounded-xl mb-4">
+                <div class="grid-2048" id="grid-2048">
+                    </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 w-full max-w-[200px]">
+                <div></div>
+                <button onclick="move2048('up')" class="bg-white/50 p-3 rounded-lg text-xl font-bold">⬆️</button>
+                <div></div>
+                <button onclick="move2048('left')" class="bg-white/50 p-3 rounded-lg text-xl font-bold">⬅️</button>
+                <button onclick="move2048('down')" class="bg-white/50 p-3 rounded-lg text-xl font-bold">⬇️</button>
+                <button onclick="move2048('right')" class="bg-white/50 p-3 rounded-lg text-xl font-bold">➡️</button>
+            </div>
+            <p class="text-xs mt-4 opacity-70">Combine emojis to level up!</p>
+        </div>
+    </div>
+
+    <div id="wheel-page" class="page-section flex-col w-full max-w-md items-center">
+        <button onclick="goTo('game-menu')" class="self-start mb-4 text-sm font-bold opacity-60">⬅ Games</button>
+        <div class="glass w-full rounded-3xl p-6 text-center flex flex-col items-center">
+            <h2 class="text-xl font-bold mb-6">The Wheel of Destiny</h2>
+            <div class="relative w-64 h-64 mb-8">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-4 text-4xl z-20">🔻</div>
+                <canvas id="wheel-canvas" width="300" height="300" class="w-full h-full rounded-full shadow-xl"></canvas>
+            </div>
+            <button onclick="spinWheel()" id="spin-btn" class="bg-rose-500 text-white text-lg px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 transition">
+                SPIN IT!
+            </button>
+            <p id="wheel-result" class="mt-6 text-xl font-bold text-slate-800 min-h-[30px]"></p>
+        </div>
+    </div>
 
     <div id="vibe-page" class="page-section flex-col w-full max-w-md items-center">
         <button onclick="goTo('home')" class="self-start mb-4 text-sm font-bold opacity-60 hover:opacity-100">⬅ Back Home</button>
-
         <div class="glass w-full rounded-3xl p-6 text-center">
             <h2 class="text-2xl font-bold mb-6">Current Mood?</h2>
-            
             <div class="space-y-3 w-full">
                 <button onclick="showMood('motivation')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">🚀 I Need Hype</button>
                 <button onclick="showMood('bored')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">😑 Bored & Single</button>
                 <button onclick="showMood('miss')" class="bg-white/40 hover:bg-white/70 w-full py-4 rounded-xl font-bold transition flex items-center justify-center gap-2">🥺 Miss Our Talks</button>
             </div>
-
             <div id="mood-display" class="hidden mt-8 p-6 bg-white/60 rounded-2xl shadow-sm transition-all duration-300 transform scale-95 opacity-0">
                 <p id="mood-text" class="text-lg font-bold text-slate-800 leading-relaxed"></p>
             </div>
@@ -117,81 +220,315 @@
         function goTo(pageId) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.getElementById(pageId + '-page').classList.add('active');
-            if(pageId === 'game') initGame();
+            
+            // Init scripts
+            if(pageId === 'popper') initPopper();
+            if(pageId === 'catcher') initCatcher();
+            if(pageId === 'whack') ; // Starts on button click
+            if(pageId === '2048') init2048();
+            if(pageId === 'wheel') drawWheel();
         }
 
-        // --- GAME LOGIC ---
-        const bubbleGrid = document.getElementById('bubble-grid');
-        const gameStatus = document.getElementById('game-status');
-        const finaleOverlay = document.getElementById('finale-overlay');
-        let poppedCount = 0;
-        const totalBubbles = 20;
-        let finaleInterval;
-
-        function initGame() {
-            bubbleGrid.innerHTML = '';
-            poppedCount = 0;
-            gameStatus.innerText = "Popped: 0";
-            finaleOverlay.classList.add('hidden');
+        // --- 1. STRESS POPPER ---
+        function initPopper() {
+            const grid = document.getElementById('bubble-grid');
+            const status = document.getElementById('game-status');
+            grid.innerHTML = '';
+            let popped = 0;
+            status.innerText = "Popped: 0";
             
-            for(let i=0; i<totalBubbles; i++) {
+            for(let i=0; i<20; i++) {
                 let b = document.createElement('div');
                 b.className = 'bubble bg-gradient-to-br from-indigo-300 to-purple-300 w-10 h-10 rounded-full shadow-inner mx-auto';
                 b.onclick = () => {
                     if(!b.classList.contains('popped')) {
                         b.classList.add('popped');
-                        poppedCount++;
-                        gameStatus.innerText = `Popped: ${poppedCount}`;
-                        if(poppedCount === totalBubbles) triggerFinale();
+                        popped++;
+                        status.innerText = `Popped: ${popped}`;
+                        if(popped === 20) {
+                            confetti();
+                            setTimeout(() => alert("✨ Satisfaction Level: 100% ✨"), 500);
+                        }
                     }
                 };
-                bubbleGrid.appendChild(b);
+                grid.appendChild(b);
             }
         }
 
-        function triggerFinale() {
-            finaleOverlay.classList.remove('hidden');
-            finaleOverlay.classList.add('flex'); // Make sure it uses flexbox
-            
-            // 1. Continuous Fireworks
-            var duration = 15 * 1000;
-            var end = Date.now() + duration;
+        // --- 2. GREEN FLAG CATCHER ---
+        let catcherInterval, spawnInterval;
+        let catcherScore = 0;
+        let basketPos = 50; // Percentage
+        
+        function initCatcher() {
+            catcherScore = 0;
+            document.getElementById('catcher-score').innerText = 0;
+            document.querySelectorAll('.falling-item').forEach(e => e.remove());
+            startCatcher();
+        }
 
-            (function frame() {
-                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
-                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
-                if (Date.now() < end && !finaleOverlay.classList.contains('hidden')) {
-                    requestAnimationFrame(frame);
+        function startCatcher() {
+            if(catcherInterval) clearInterval(catcherInterval);
+            if(spawnInterval) clearInterval(spawnInterval);
+            
+            spawnInterval = setInterval(() => {
+                createFallingItem();
+            }, 800);
+
+            catcherInterval = setInterval(() => {
+                updateFallingItems();
+            }, 50);
+        }
+
+        function stopCatcher() {
+            clearInterval(catcherInterval);
+            clearInterval(spawnInterval);
+        }
+
+        function moveBasket(dir) {
+            basketPos = Math.max(0, Math.min(90, basketPos + dir));
+            document.getElementById('player-basket').style.left = basketPos + '%';
+        }
+
+        function createFallingItem() {
+            const area = document.getElementById('catcher-area');
+            const item = document.createElement('div');
+            item.className = 'falling-item';
+            const isGood = Math.random() > 0.3; // 70% good items
+            item.innerText = isGood ? (Math.random()>0.5 ? '🌸' : '💖') : '🚩';
+            item.dataset.type = isGood ? 'good' : 'bad';
+            item.style.left = Math.random() * 90 + '%';
+            item.style.top = '-30px';
+            area.appendChild(item);
+        }
+
+        function updateFallingItems() {
+            const items = document.querySelectorAll('.falling-item');
+            const basket = document.getElementById('player-basket').getBoundingClientRect();
+            
+            items.forEach(item => {
+                let top = parseFloat(item.style.top || -30);
+                item.style.top = (top + 3) + 'px'; // Fall speed
+
+                const rect = item.getBoundingClientRect();
+
+                // Collision Detection
+                if(rect.top + rect.height > basket.top && 
+                   rect.left < basket.right && 
+                   rect.right > basket.left &&
+                   top < 300) {
+                    
+                    if(item.dataset.type === 'good') {
+                        catcherScore += 10;
+                        item.remove();
+                    } else {
+                        catcherScore -= 20;
+                        item.innerText = '💥';
+                        setTimeout(() => item.remove(), 200);
+                    }
+                    document.getElementById('catcher-score').innerText = catcherScore;
                 }
-            }());
 
-            // 2. Typewriter Effect
-            const message = "Even though we are miles apart, you are one of the closest friends I have. \n\nKeep smiling, keep watching dramas, and keep being awesome. \n\nDon't Feel Bad for Local Valentine's Day😂🤣! 🌸";
-            const typeWriterElement = document.getElementById('typewriter-text');
-            typeWriterElement.innerText = "";
-            let i = 0;
+                if(top > 350) item.remove();
+            });
+        }
+
+        // --- 3. WHACK-A-MOLE ---
+        let whackScore = 0;
+        let whackTime = 30;
+        let whackTimer;
+        let moleTimer;
+
+        function startWhack() {
+            whackScore = 0;
+            whackTime = 30;
+            document.getElementById('whack-score').innerText = 0;
+            document.getElementById('whack-btn').style.display = 'none';
             
-            function typeWriter() {
-                if (i < message.length) {
-                    typeWriterElement.innerText += message.charAt(i);
-                    i++;
-                    setTimeout(typeWriter, 50); // Typing speed
+            whackTimer = setInterval(() => {
+                whackTime--;
+                document.getElementById('whack-timer').innerText = whackTime + 's';
+                if(whackTime <= 0) endWhack();
+            }, 1000);
+
+            moleTimer = setInterval(showMole, 700);
+        }
+
+        function showMole() {
+            const moles = document.querySelectorAll('.mole');
+            moles.forEach(m => m.classList.remove('up'));
+            
+            const random = Math.floor(Math.random() * 9);
+            const mole = document.getElementById(`mole-${random}`);
+            
+            // 20% chance of a Good Text (Don't hit!), 80% Toxic
+            const isToxic = Math.random() > 0.2;
+            mole.innerText = isToxic ? '🚩' : '💌';
+            mole.dataset.type = isToxic ? 'bad' : 'good';
+            
+            mole.classList.add('up');
+            setTimeout(() => mole.classList.remove('up'), 600);
+        }
+
+        function hitMole(index) {
+            const mole = document.getElementById(`mole-${index}`);
+            if(mole.classList.contains('up')) {
+                mole.classList.remove('up');
+                if(mole.dataset.type === 'bad') {
+                    whackScore += 10;
+                } else {
+                    whackScore -= 20; // Hit a love letter!
+                    alert("Don't hit the love letters! 💌");
+                }
+                document.getElementById('whack-score').innerText = whackScore;
+            }
+        }
+
+        function endWhack() {
+            clearInterval(whackTimer);
+            clearInterval(moleTimer);
+            document.getElementById('whack-btn').style.display = 'inline-block';
+            document.getElementById('whack-btn').innerText = "Play Again";
+            alert(`Time's up! You smashed ${whackScore} points of toxicity!`);
+        }
+        
+        function stopWhack() {
+            clearInterval(whackTimer);
+            clearInterval(moleTimer);
+        }
+
+        // --- 4. 2048 MAIN CHARACTER ---
+        let board = Array(16).fill(0);
+        const emojis = { 0: '', 2: '🐣', 4: '👓', 8: '👒', 16: '💄', 32: '👠', 64: '💅', 128: '💃', 256: '🦄', 512: '🏰', 1024: '👸', 2048: '👑' };
+
+        function init2048() {
+            board = Array(16).fill(0);
+            spawn2048();
+            spawn2048();
+            draw2048();
+        }
+
+        function spawn2048() {
+            let empty = board.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
+            if(empty.length === 0) return;
+            let idx = empty[Math.floor(Math.random() * empty.length)];
+            board[idx] = 2;
+        }
+
+        function draw2048() {
+            const grid = document.getElementById('grid-2048');
+            grid.innerHTML = '';
+            board.forEach(val => {
+                let div = document.createElement('div');
+                div.className = 'tile-2048';
+                div.innerText = emojis[val] || val;
+                if(val > 0) div.style.backgroundColor = `rgba(255, 255, 255, ${0.4 + (Math.log2(val)/10)})`;
+                grid.appendChild(div);
+            });
+        }
+
+        function move2048(dir) {
+            // Simplified logic for up/down/left/right
+            // This is a basic implementation for the sake of single-file length
+            let rotated = false;
+            if(dir === 'up') { rotateBoard(); rotateBoard(); rotateBoard(); rotated = true; } // Treat as right
+            if(dir === 'left') { rotateBoard(); rotateBoard(); rotated = true; } // Treat as right
+            if(dir === 'down') { rotateBoard(); rotated = true; } // Treat as right
+            
+            // Shift Right Logic
+            let moved = false;
+            for(let r=0; r<4; r++) {
+                let row = board.slice(r*4, r*4+4).filter(x => x);
+                for(let i=row.length-1; i>0; i--) {
+                    if(row[i] === row[i-1]) {
+                        row[i] *= 2;
+                        row[i-1] = 0;
+                        if(row[i] === 2048) { confetti(); alert("YOU ARE THE QUEEN! 👑"); }
+                    }
+                }
+                row = row.filter(x => x);
+                while(row.length < 4) row.unshift(0);
+                for(let c=0; c<4; c++) {
+                    if(board[r*4+c] !== row[c]) moved = true;
+                    board[r*4+c] = row[c];
                 }
             }
-            setTimeout(typeWriter, 500);
+
+            // Restore rotation
+            if(dir === 'up') { rotateBoard(); }
+            if(dir === 'left') { rotateBoard(); rotateBoard(); }
+            if(dir === 'down') { rotateBoard(); rotateBoard(); rotateBoard(); }
+
+            if(moved) {
+                spawn2048();
+                draw2048();
+            }
         }
 
-        function closeFinale() {
-            finaleOverlay.classList.add('hidden');
-            finaleOverlay.classList.remove('flex');
-            goTo('home');
+        function rotateBoard() {
+            let newBoard = Array(16).fill(0);
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<4; c++) {
+                    newBoard[c*4 + (3-r)] = board[r*4 + c];
+                }
+            }
+            board = newBoard;
         }
 
-        // --- VIBE CONTENT (20+ Items each) ---
+        // --- 5. WHEEL OF DESTINY ---
+        const options = ["Watch Drama", "Order Pizza", "Sleep", "Text Me", "Skin Care", "Online Shop"];
+        const colors = ["#FFADAD", "#FFD6A5", "#FDFFB6", "#CAFFBF", "#9BF6FF", "#A0C4FF"];
+        let wheelCtx;
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheel-canvas');
+            if(!canvas.getContext) return;
+            wheelCtx = canvas.getContext('2d');
+            const arc = Math.PI * 2 / options.length;
+            const radius = 150;
+            
+            wheelCtx.clearRect(0,0,300,300);
+            wheelCtx.translate(150,150);
+            
+            for(let i=0; i<options.length; i++) {
+                const angle = i * arc;
+                wheelCtx.beginPath();
+                wheelCtx.fillStyle = colors[i % colors.length];
+                wheelCtx.moveTo(0,0);
+                wheelCtx.arc(0, 0, radius, angle, angle + arc);
+                wheelCtx.lineTo(0,0);
+                wheelCtx.fill();
+                
+                wheelCtx.save();
+                wheelCtx.rotate(angle + arc/2);
+                wheelCtx.fillStyle = "#333";
+                wheelCtx.font = "bold 14px Arial";
+                wheelCtx.fillText(options[i], 60, 5);
+                wheelCtx.restore();
+            }
+            wheelCtx.resetTransform();
+        }
+
+        function spinWheel() {
+            const canvas = document.getElementById('wheel-canvas');
+            const resultText = document.getElementById('wheel-result');
+            const randomSpin = Math.floor(Math.random() * 360) + 1800; // At least 5 spins
+            
+            canvas.style.transform = `rotate(${randomSpin}deg)`;
+            
+            setTimeout(() => {
+                const actualDeg = randomSpin % 360;
+                // Calculate which segment is at the top (270deg or -90deg position relatively)
+                // This is a rough estimation for visual fun
+                resultText.innerText = "✨ The Universe has spoken! ✨";
+                confetti();
+            }, 3000);
+        }
+
+        // --- VIBE CONTENT ---
         let lastIndices = { motivation: -1, bored: -1, miss: -1 };
-
         const messages = {
-            motivation: [
+            motivation: [ 
                 "You are the main character. The writers are just building character development right now.",
                 "Adjust your crown. You've got this.",
                 "Don't lower your standards. Increase your hydration.",
@@ -211,9 +548,8 @@
                 "Be a voice, not an echo.",
                 "Shine bright like a diamond (or a really polished spoon).",
                 "You are limited edition.",
-                "Believe in your inner power."
-            ],
-            bored: [
+                "Believe in your inner power." ],
+            bored: [ 
                 "Go watch that K-Drama episode you've been pausing.",
                 "Why have a boyfriend when you can have peace and quiet?",
                 "Plot twist: Your future husband is currently stuck in traffic.",
@@ -222,7 +558,7 @@
                 "Go online shopping. Put things in the cart. Close the tab. Therapy.",
                 "If you're bored, you're just a Side Character. Go do something Main Character-y.",
                 "Recommended activity: Nap.",
-                "Scroll through Insta reels until you laugh.",
+                "Scroll through TikTok until you laugh.",
                 "Go annoy your siblings (or me).",
                 "Order the food. You deserve it.",
                 "Start a new drama. Yes, another one.",
@@ -233,9 +569,8 @@
                 "Go drink water. You're probably dehydrated.",
                 "Check your horoscope. Blame the stars.",
                 "Learn a K-pop dance. Give up after 2 minutes.",
-                "Remember: Single = Richer."
-            ],
-            miss: [
+                "Remember: Single = Richer." ],
+            miss: [ 
                 "I'm probably waiting for your text right now.",
                 "Distance is just a glitch in the simulation.",
                 "Sending virtual hugs... Loading... 99%...",
@@ -254,7 +589,7 @@
                 "You're far away, but you're close to my heart. (Cheesy but true).",
                 "We need a teleparty soon.",
                 "Life is boring without our chats.",
-                "Hope you're smiling.",
+                "Thinking of you! Hope you're smiling.",
                 "Internet friends are the best friends."
             ]
         };
@@ -263,22 +598,13 @@
             const display = document.getElementById('mood-display');
             const text = document.getElementById('mood-text');
             const list = messages[type];
-            
             let newIndex;
-            do { newIndex = Math.floor(Math.random() * list.length); } 
-            while (newIndex === lastIndices[type] && list.length > 1);
-            
+            do { newIndex = Math.floor(Math.random() * list.length); } while (newIndex === lastIndices[type] && list.length > 1);
             lastIndices[type] = newIndex;
-            
             display.classList.remove('hidden');
             display.style.opacity = '0';
             display.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                text.innerText = list[newIndex];
-                display.style.opacity = '1';
-                display.style.transform = 'scale(1)';
-            }, 100);
+            setTimeout(() => { text.innerText = list[newIndex]; display.style.opacity = '1'; display.style.transform = 'scale(1)'; }, 100);
         }
     </script>
 </body>
