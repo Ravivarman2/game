@@ -345,8 +345,16 @@
             const item = document.createElement('div');
             item.className = 'falling-item';
             const isGood = Math.random() > 0.3; 
-            item.innerText = isGood ? (Math.random()>0.5 ? '🌸' : '💖') : '🚩';
-            item.dataset.type = isGood ? 'good' : 'bad';
+            if (isGood) {
+                // CHANGE: Instead of Hearts/Flowers, we use Pizza, Money, and Boba Tea
+                // This makes it funny and "Single Life" focused, not romantic!
+                const goodies = ['🍕', '💸', '🧋', '😴'];
+                item.innerText = goodies[Math.floor(Math.random() * goodies.length)];
+                item.dataset.type = 'good';
+            } else {
+                item.innerText = '🚩'; // Red Flag
+                item.dataset.type = 'bad';
+            }
             item.style.left = Math.random() * 90 + '%';
             item.style.top = '-30px';
             area.appendChild(item);
@@ -626,20 +634,20 @@
                 "Sending virtual hugs... Loading... 99%...",
                 "I'd teleport there if physics wasn't so annoying.",
                 "Our friendship > Any relationship.",
-                "Just a reminder that you're my favorite notification.",
+               // "Just a reminder that you're my favorite notification.",
                 "I wish we could grab coffee right now.",
                 "Technically we look at the same moon, so that's cool I guess.",
-                "Can't wait until we can actually hang out IRL.",
+               // "Can't wait until we can actually hang out IRL.",
                 "You are the best internet find ever.",
                 "Missing my K-Drama buddy.",
                 "If I could email you a coffee, I would.",
-                "Reply faster, I'm bored without you.",
+               // "Reply faster, I'm bored without you.",
                 "Distance allows us to appreciate the texts more.",
                 "Sending good vibes across the miles.",
-                "You're far away, but you're close to my heart. (Cheesy but true).",
+               // "You're far away, but you're close to my heart. (Cheesy but true).",
                 "We need a teleparty soon.",
                 "Life is boring without our chats.",
-                "Thinking of you! Hope you're smiling.",
+                " Hope you're smiling.",
                 "Internet friends are the best friends."
             ]
         };
